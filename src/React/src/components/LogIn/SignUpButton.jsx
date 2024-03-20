@@ -1,5 +1,5 @@
-import './Login.Module.css'
+
 function SignUpButton(){
-    return(<button>Sign Up</button>);
+    return(<button type="button" className="btn btn-secondary">Sign Up</button>);
 }
 export default SignUpButton;
