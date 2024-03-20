@@ -43,7 +43,8 @@ scopes = [
     "user-top-read",
     "user-follow-read",
     "streaming", 
-    "user-modify-playback-state"
+    "user-modify-playback-state",
+    "user-read-playback-state"
 
 ]
 
