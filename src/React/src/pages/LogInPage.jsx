@@ -1,6 +1,7 @@
 import StartForm from "../components/LogIn/StartForm";
 import Logo from "../components/Logo/Logo";
 
+
 function LogInPage(){
  return(
     <div className="container text-center">

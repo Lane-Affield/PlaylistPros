@@ -25,7 +25,7 @@ client_id = os.getenv(
     "CLIENT_ID"
 )  # client_ID in the .env file, can be found in you rspotify Project Info
 client_secret = os.getenv("CLIENT_SECRET")  # same as client_id
-redirect_uri = "http://127.0.0.1:5000/callback"  # this is the redirect uri after login
+redirect_uri = "http://127.0.0.1:8000/callback"  # this is the redirect uri after login
 
 # endpoints needed
 authorization_url = "https://accounts.spotify.com/authorize"
@@ -101,7 +101,7 @@ def callback():  # this is the function that will recieve the token, after vreif
     try:
         user_access_token = response_data["access_token"]
         session["token"] = user_access_token
-        return "Success!"
+        return session["token"]
     except:
         return "Error in retrieving token"
 
@@ -121,3 +121,4 @@ def refresh_token(refresh_token):  # refreshes token if necessary
         return response_data["access_token"]
     else:
         return None
+
