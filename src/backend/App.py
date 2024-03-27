@@ -23,7 +23,7 @@ app.secret_key = os.urandom(24)
 def get_index():  # this is an implementation of the index function, which was created in the Authorization.py file
     value = index()
     return value
-
+ 
 
 @app.route("/callback")
 def get_callback():  # this function is what will send a user to the selection menu for their data
@@ -40,4 +40,44 @@ def refresh_token_route():
         return "Failed to refresh token"
 
 
-app.run(debug=True)
+@app.route("/pause")
+def pause_music():
+        try:
+            url = "https://api.spotify.com/v1/me/player/pause"
+            header = {"Authorization": f'Bearer {session["token"]}'}
+            requests.Session().request('GET', url, headers=header)
+            return "paused"
+        except: 
+            return "problem"
+
+
+@app.route("/play")
+def play_music():
+   url = 'https://api.spotify.com/v1/me/player'
+   header = {"Authorization": f'Bearer {session["token"]}'}
+   values =  requests.Session().request('GET', url, headers=header)
+   value = values.json()
+   return value
+
+@app.route("/queue")
+def queue_song():
+    pass
+
+@app.route("/skip")
+def skip_song():
+    pass 
+@app.route("/previous")
+def previous_song():
+    pass
+
+@app.route("/song_info")
+def song_info():
+    pass
+@app.route("/session_info")
+def session_info():
+    pass
+
+
+
+
+app.run(debug=True, port= 8000)
