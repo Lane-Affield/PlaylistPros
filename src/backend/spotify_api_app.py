@@ -66,6 +66,7 @@ def queue_song(song_uri):
 @app.route("/previous")
 def previous_song():
     pass
+
     
 
 @app.route("/song_info")
@@ -89,4 +90,4 @@ def closing_time():
         sp.start_playback(uris=song_uri)
         return "GET OUT"
 
-app.run(debug=True, port= 8000)
+app.run(debug=True)

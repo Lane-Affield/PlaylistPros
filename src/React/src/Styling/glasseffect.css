@@ -1,0 +1,21 @@
+.glass {
+    background-color: rgba(217, 217, 217, 0.1); /* Semi-transparent white background */
+    background-image: linear-gradient(to bottom, rgba(148, 149, 158, 0.1), transparent);
+    backdrop-filter: blur(10px); /* Add blur effect */
+    border-radius: 8px; /* Rounded corners for a smooth look (optional) */
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+    color: white;
+  }
+
+.glass-button{
+  background-color: rgba(217, 217, 217, 0.1); /* Semi-transparent white background */
+  background-image: linear-gradient(to bottom, rgba(148, 149, 158, 0.1), transparent);
+  backdrop-filter: blur(10px); /* Add blur effect */
+  border-radius: 8px; /* Rounded corners for a smooth look (optional) */
+  box-shadow: none;
+  color: white;
+
+  }
+.glas * {
+    margin: 10px; /* Example using margin */
+  }

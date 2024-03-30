@@ -1,0 +1,16 @@
+.input_text{
+    background: none;
+
+    border-bottom: 2px;
+    caret-color: white;
+    color: white;
+    outline: none;
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 1px solid white;
+    border-left: 0;
+}
+
+.labels{
+    text-align: left;
+}

@@ -1,9 +1,14 @@
+import NavBar from "../components/Home/NavBar";
+import CreateSession from "../components/SessionSelector/CreateSession";
+import SessionSelection from "../components/SessionSelector/SessionSelection";
+
 function SessionPage(){
     return(
         <div>
-            <h1></h1>
+            <NavBar />
+            <CreateSession />
         </div>
-    )
+    );
 };
 
 export default SessionPage;

@@ -5,8 +5,8 @@ function HomePage(){
     return(
         <div>
             <NavBar />
-            <div style={{alignItems:"center"}}>
-            <Logo />
+            <div>
+                <Logo />
             </div>
         </div>
     );
