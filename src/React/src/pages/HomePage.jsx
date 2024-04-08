@@ -3,10 +3,10 @@ import Logo from "../components/Logo/Logo";
 
 function HomePage(){
     return(
-        <div>
+        <div className="container text-center">
             <NavBar />
-            <div>
-                <Logo />
+            <div className="row">
+                    <Logo />
             </div>
         </div>
     );

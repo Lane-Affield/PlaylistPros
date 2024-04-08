@@ -12,6 +12,8 @@ DESCTIPTION:
     NOTE: playing a previous playing a previous song will require more than just a call 
           - need to keep track of ID of next song and queue it next, then add it back to the api
 
+ closing time uri (important) spotify:artist:1TqQi97nqeiuOJrIFv5Sw0
+          
 
 """
 
@@ -23,10 +25,11 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, redirect, request, session, render_template
 
+
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")  # client_ID in the .env file, can be found in you rspotify Project Info
 client_secret = os.getenv("CLIENT_SECRET")  # same as client_id
-redirect_uri = "http://127.0.0.1:8000/callback"  # this is the redirect uri after login
+redirect_uri = "http://127.0.0.1:5000/callback"  # this is the redirect uri after login
 scopes = "playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify user-top-read user-follow-read streaming user-modify-playback-state user-read-playback-state"
 sp = spotipy.Spotify(
     auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scopes)
@@ -65,14 +68,25 @@ def queue_song(song_uri):
 
 @app.route("/previous")
 def previous_song():
-    pass
+    sp.previous_track()
+    return "played previous track"
 
-    
+@app.route("/next")
+def next_song():
+    sp.next_track()
+    return "next song played"    
 
 @app.route("/song_info")
 def song_info():
     current = sp.current_playback()
-    return current
+    
+    song_data = {"song": current["item"]["name"],
+                  "song_uri" : current["item"]["uri"],
+                  "artist" : current["item"]["artists"][0]["name"],
+                  "duration_ms" : current["item"]["duration_ms"], 
+                  "album_img" : current["item"]["album"]["images"][1]
+                     }
+    return song_data
 
 @app.route("/session_info/<ids>")
 def session_info(ids):
@@ -80,14 +94,10 @@ def session_info(ids):
 
 @app.route("/closing_time")
 def closing_time():
-    search_results = sp.search(q="Closing Time Semisonic", type="track")
-# Check if search results are empty
-    if len(search_results['tracks']['items']) == 0:
-        print("No songs found for Closing Time by Semisonic")
-    else:
-    # Assuming the first result is the desired song
-        song_uri = [search_results['tracks']['items'][0]['uri']]
-        sp.start_playback(uris=song_uri)
-        return "GET OUT"
+
+    sp.start_playback(uris=['spotify:track:1A5V1sxyCLpKJezp75tUXn'])
+    return "GET OUT"
+
+
 
 app.run(debug=True)

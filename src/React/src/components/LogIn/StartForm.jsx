@@ -5,6 +5,7 @@ function StartForm() {
     let navigate = useNavigate();
     const routeChange = () => {
         let path = "/home"
+        fetch("http://127.0.0.1:5000/")
         navigate(path)
     }
 
@@ -17,6 +18,8 @@ function StartForm() {
   const swapSignUpForm = () => {
     setFormType("signup");
   };
+
+
 
   return (
     <div>
@@ -43,7 +46,7 @@ function StartForm() {
               </div>
           </form>
         ) : (
-          <form onSubmit="#">
+          <form onSubmit={routeChange}>
             <div className="container text-center">
               <div className="row">
                 <label>Username</label>
@@ -59,10 +62,10 @@ function StartForm() {
               </div>
               <div className="row">
                 <div className="col">
-                  <button type="submit">Log In</button>
+                  <button type="button" onClick={swapLogInForm}>Log In</button>
                 </div>
                 <div className="col">
-                  <button onClick={routeChange} className="glass-button">Continue</button>
+                  <button type="submit" className="glass-button">Continue</button>
                 </div>
               </div>
             </div>

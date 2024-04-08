@@ -6,7 +6,7 @@ function SessionPage(){
     return(
         <div>
             <NavBar />
-            <CreateSession />
+            <SessionSelection />
         </div>
     );
 };
