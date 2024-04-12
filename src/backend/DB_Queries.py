@@ -45,6 +45,23 @@ class PlaylistProsCrud():
             return True
         else:
             return False
+        
+    # update user passkey
+    def updatePasskey(self, username, currentPasskey, newPasskey):
+        # if the correct username and passkey are entered
+        if self.verifyUserPass(username, currentPasskey):
+            table = self.__getTable()
+            Key = self.__getKey(username)
+            table.update_item(
+                Key= Key,
+                UpdateExpression='SET passkey = :val1',
+                ExpressionAttributeValues={
+                    ':val1': newPasskey
+                }
+            )
+            return "Updated password successfully"
+        else: 
+            return "Username or passkey is incorrect."
     
     # create a new user with the given username
     def createUser(self, username, passkey):
@@ -55,7 +72,8 @@ class PlaylistProsCrud():
             table = self.__getTable()
             table.put_item(Item = {
                 'username': username,
-                'passkey': passkey
+                'passkey': passkey,
+                'sessions': []
             })
             return "Created user successfully!"
 
@@ -82,21 +100,41 @@ class PlaylistProsCrud():
         try:
             user = response['Item']
         except KeyError:
-            return 'User not in table.'
+            return "User not in table."
 
         return user
 
-    def updatePassword(self):
-        pass
-
-    def createSession(self, username, newSessionName):
-        pass
+    def createSession(self, username, SessionName):
+        table = self.__getTable()
+        Key = self.__getKey(username)
+        table.update_item(
+            Key = Key,
+            UpdateExpression='SET sessions = list_append(sessions, :val)', 
+            ExpressionAttributeValues={
+                ':val' : [SessionName]
+            }
+        )
 
     def deleteSession(self, username, sessionName):
-        pass
+        table = self.__getTable()
+        Key = self.__getKey(username)
 
+        # get the index of the session to delete
+        sessionIndex = self.getAllSessions(username).index('sessionName')
+
+        table.update_item(
+            Key = Key,
+            UpdateExpression='REMOVE sessions[:val]',
+            ExpressionAttributeValues={
+                ':val' : sessionIndex
+            }
+        )
+
+    # retrieve a all sessions and return them as a list
     def getAllSessions(self, username) -> list:
-        pass
+        sessions = self.getUser(username)['sessions']
+
+        return sessions
 
     def getSessionSongs(self, session) -> list:
         pass
@@ -120,7 +158,7 @@ instance = PlaylistProsCrud()
 # getLog = instance.getUser('user1')
 # print(getLog)
 
-# # return 'user not in table' if no user
+# return 'user not in table' if no user
 # getLog = instance.getUser('user2')
 # print(getLog)
 
@@ -135,3 +173,27 @@ instance = PlaylistProsCrud()
 # print(verLog)
 # verLog = instance.verifyUserPass('example_user','wrong_passkey')
 # print(verLog)
+
+# # test updatePasskey
+# createLog = instance.createUser('user1', 'passkey1')
+# print(createLog)
+# upLog = instance.updatePasskey('user1', 'passkey1', 'newPasskey1')
+# print(upLog)
+# upLog = instance.updatePasskey('user1', 'passkey1', 'newPasskey1')
+# print(upLog)
+
+# # test creating a new session
+# createLog = instance.createUser('user1', 'passkey1')
+# print(createLog)
+# instance.createSession('user1','test_session')
+# getLog = instance.getUser('user1')
+# print(getLog)
+
+# test deleting a session
+instance.deleteSession('user1', 'test_session')
+getLog = instance.getUser('user1')
+print(getLog)
+
+# # test getAllSessions
+# allSessionsLog = instance.getAllSessions('user1')
+# print(allSessionsLog)
