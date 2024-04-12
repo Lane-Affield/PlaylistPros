@@ -59,7 +59,7 @@ class PlaylistProsCrud():
                     ':val1': newPasskey
                 }
             )
-            return "Updated password successfully"
+            return "Updated password successfully."
         else: 
             return "Username or passkey is incorrect."
     
@@ -73,9 +73,9 @@ class PlaylistProsCrud():
             table.put_item(Item = {
                 'username': username,
                 'passkey': passkey,
-                'sessions': []
+                'sessions': {}
             })
-            return "Created user successfully!"
+            return "Created user successfully."
 
     # deletes a user with the given username, regardless if the user exists
     def deleteUser(self, username):
@@ -107,31 +107,32 @@ class PlaylistProsCrud():
     def createSession(self, username, SessionName):
         table = self.__getTable()
         Key = self.__getKey(username)
-        table.update_item(
-            Key = Key,
-            UpdateExpression='SET sessions = list_append(sessions, :val)', 
-            ExpressionAttributeValues={
-                ':val' : [SessionName]
-            }
-        )
+        try:
+            table.update_item(
+                Key = Key,
+                UpdateExpression = "SET sessions.#sessionName = :emptyList",
+                ExpressionAttributeNames = { "#sessionName" : SessionName },
+                ExpressionAttributeValues = { ":emptyList" : [] },
+                ConditionExpression = "attribute_not_exists(sessions.#sessionName)",
+            )
+            return "Session successfully created."
+        except:
+            return "Session already exists."
 
+    # deletes username's session, 'sessionName', regardless of whetheror not it exists.
     def deleteSession(self, username, sessionName):
         table = self.__getTable()
         Key = self.__getKey(username)
 
-        # get the index of the session to delete
-        sessionIndex = self.getAllSessions(username).index('sessionName')
-
         table.update_item(
             Key = Key,
-            UpdateExpression='REMOVE sessions[:val]',
-            ExpressionAttributeValues={
-                ':val' : sessionIndex
-            }
+            UpdateExpression='REMOVE sessions.#sessionName',
+            ExpressionAttributeNames={ '#sessionName' : sessionName }
         )
+        return "Session successfully deleted."
 
     # retrieve a all sessions and return them as a list
-    def getAllSessions(self, username) -> list:
+    def getAllSessions(self, username) -> dict:
         sessions = self.getUser(username)['sessions']
 
         return sessions
@@ -154,7 +155,7 @@ instance = PlaylistProsCrud()
 # createLog = instance.createUser('user1', 'passkey2')
 # print(createLog)
 
-# get a user 
+# # get a user 
 # getLog = instance.getUser('user1')
 # print(getLog)
 
@@ -185,14 +186,15 @@ instance = PlaylistProsCrud()
 # # test creating a new session
 # createLog = instance.createUser('user1', 'passkey1')
 # print(createLog)
-# instance.createSession('user1','test_session')
+# createLog = instance.createSession('user1','test_session')
+# print(createLog)
 # getLog = instance.getUser('user1')
 # print(getLog)
 
-# test deleting a session
-instance.deleteSession('user1', 'test_session')
-getLog = instance.getUser('user1')
-print(getLog)
+# # test deleting a session
+# delLog = instance.deleteSession('user1', 'test_session')
+# getLog = instance.getUser('user1')
+# print(getLog)
 
 # # test getAllSessions
 # allSessionsLog = instance.getAllSessions('user1')
