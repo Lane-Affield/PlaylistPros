@@ -104,15 +104,17 @@ class PlaylistProsCrud():
 
         return user
 
-    def createSession(self, username, SessionName):
+    # Create a session for the user, 'username', with the name 'SessionName'.
+    def createSession(self, username, sessionName):
         table = self.__getTable()
         Key = self.__getKey(username)
+
         try:
             table.update_item(
                 Key = Key,
                 UpdateExpression = "SET sessions.#sessionName = :emptyList",
-                ExpressionAttributeNames = { "#sessionName" : SessionName },
-                ExpressionAttributeValues = { ":emptyList" : [] },
+                ExpressionAttributeNames = { "#sessionName" : sessionName },
+                ExpressionAttributeValues = { ":emptyList" : []},
                 ConditionExpression = "attribute_not_exists(sessions.#sessionName)",
             )
             return "Session successfully created."
@@ -137,13 +139,35 @@ class PlaylistProsCrud():
 
         return sessions
 
-    def getSessionSongs(self, session) -> list:
-        pass
+    # retrieve the songs in a given session from a given user
+    def getSessionSongs(self, username, sessionName) -> set:
+        songs = self.getUser(username)['sessions'][sessionName]
 
-    def addSessionSongs(self, session, song):
-        pass
+        return songs
+    
+    # add a list of songs to a given session from a given user
+    def addSessionSongs(self, username, sessionName, songs: list):
+        table = self.__getTable()
+        Key = self.__getKey(username)
 
-    def deleteSessionSongs(self, session, song):
+        # prevent duplicate songs
+        curSongs = list(self.getSessionSongs(username, sessionName))
+        songs = songs + curSongs
+        songSet = list(set(songs))
+
+        try:
+            table.update_item(
+                Key = Key,
+                UpdateExpression = "SET sessions.#sessionName = :songs",
+                ExpressionAttributeNames = { "#sessionName" : sessionName },
+                ExpressionAttributeValues = { ":songs" : songSet },
+                ConditionExpression = "attribute_exists(sessions.#sessionName)",
+            )
+            return "Songs successfully added."
+        except:
+            return "Failed to add songs."
+
+    def deleteSessionSongs(self, username, sessionName, songs: list):
         pass
 
 
@@ -186,8 +210,8 @@ instance = PlaylistProsCrud()
 # # test creating a new session
 # createLog = instance.createUser('user1', 'passkey1')
 # print(createLog)
-# createLog = instance.createSession('user1','test_session')
-# print(createLog)
+# createSessionLog = instance.createSession('user1','test_session')
+# print(createSessionLog)
 # getLog = instance.getUser('user1')
 # print(getLog)
 
@@ -199,3 +223,13 @@ instance = PlaylistProsCrud()
 # # test getAllSessions
 # allSessionsLog = instance.getAllSessions('user1')
 # print(allSessionsLog)
+
+# test getSessionSongs
+# allSongsLog = instance.getSessionSongs('user1', 'test_session')
+# print(allSongsLog)
+
+# test addSongToSession
+# addSongsLog = instance.addSessionSongs('user1', 'test_session', songs = ['song1','song2'])
+# print(addSongsLog)
+# allSongsLog = instance.getSessionSongs('user1', 'test_session')
+# print(allSongsLog)
