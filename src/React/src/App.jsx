@@ -9,7 +9,7 @@ import CurrentSessionPage from './pages/CurrentSessionPage.jsx';
 function App() {
     return ( 
       <Router >
-        <div className='App' style={{color: '#F6F6F6'}}>
+        <div className='App' style={{color: '#F6F6F6', height: '100%',  width: '100%', overflowY: 'auto'}}>
           <div className='content'>
             <Routes>
               <Route path="/" element={<LogInPage />}></Route>
@@ -20,8 +20,8 @@ function App() {
               <Route path= "/about"></Route>
               <Route path= "/analytics" ></Route>
             </Routes>
+            </div>
           </div>
-        </div>
       </Router>
 
            );

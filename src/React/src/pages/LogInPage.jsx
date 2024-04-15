@@ -4,6 +4,7 @@ import "../Styling/glasseffect.css"
 
 function LogInPage(){
  return(
+    <div className="container-fluid">
     <div className="container text-center ">
         <div className="row align-items-start">
             <div className="col">
@@ -13,6 +14,7 @@ function LogInPage(){
                 <StartForm />
             </div>
         </div>
+    </div>
     </div>
 
  );
