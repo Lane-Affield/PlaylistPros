@@ -146,29 +146,46 @@ class PlaylistProsCrud():
         return songs
     
     # add a list of songs to a given session from a given user
-    def addSessionSongs(self, username, sessionName, songs: list):
+    def addSessionSongs(self, username, sessionName, songsToAdd: list):
         table = self.__getTable()
         Key = self.__getKey(username)
 
         # prevent duplicate songs
         curSongs = list(self.getSessionSongs(username, sessionName))
-        songs = songs + curSongs
-        songSet = list(set(songs))
+        songsCombined = songsToAdd + curSongs
+        noDupes = list(set(songsCombined))
 
         try:
             table.update_item(
                 Key = Key,
                 UpdateExpression = "SET sessions.#sessionName = :songs",
                 ExpressionAttributeNames = { "#sessionName" : sessionName },
-                ExpressionAttributeValues = { ":songs" : songSet },
+                ExpressionAttributeValues = { ":songs" : noDupes },
                 ConditionExpression = "attribute_exists(sessions.#sessionName)",
             )
             return "Songs successfully added."
         except:
             return "Failed to add songs."
 
-    def deleteSessionSongs(self, username, sessionName, songs: list):
-        pass
+    def deleteSessionSongs(self, username, sessionName, songsToRemove: list):
+        table = self.__getTable()
+        Key = self.__getKey(username)
+
+        # remove songs from curSongs
+        curSongs = list(self.getSessionSongs(username, sessionName))
+        remSongs = [song for song in curSongs if song not in songsToRemove]
+
+        try:
+            table.update_item(
+                Key = Key,
+                UpdateExpression = "SET sessions.#sessionName = :songs",
+                ExpressionAttributeNames = { "#sessionName" : sessionName },
+                ExpressionAttributeValues = { ":songs" : remSongs },
+                ConditionExpression = "attribute_exists(sessions.#sessionName)",
+            )
+            return "Songs successfully removed."
+        except:
+            return "Failed to remove songs."
 
 
 instance = PlaylistProsCrud()
@@ -228,8 +245,15 @@ instance = PlaylistProsCrud()
 # allSongsLog = instance.getSessionSongs('user1', 'test_session')
 # print(allSongsLog)
 
-# test addSongToSession
+# test addSessionSongs
 # addSongsLog = instance.addSessionSongs('user1', 'test_session', songs = ['song1','song2'])
 # print(addSongsLog)
+# allSongsLog = instance.getSessionSongs('user1', 'test_session')
+# print(allSongsLog)
+
+# test deleteSessionSongs
+# allSongsLog = instance.getSessionSongs('user1', 'test_session')
+# print(allSongsLog)
+# remSongLog = instance.deleteSessionSongs('user1','test_session', ['song1'])
 # allSongsLog = instance.getSessionSongs('user1', 'test_session')
 # print(allSongsLog)
