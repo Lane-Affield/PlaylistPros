@@ -26,32 +26,66 @@ from dotenv import load_dotenv
 from flask import Flask, redirect, request, session, render_template, jsonify
 from flask_cors import CORS
 
+''''''
 
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")  # client_ID in the .env file, can be found in you rspotify Project Info
 client_secret = os.getenv("CLIENT_SECRET")  # same as client_id
 redirect_uri = "http://127.0.0.1:5000/callback"  # this is the redirect uri after login
 scopes = "playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify user-top-read user-follow-read streaming user-modify-playback-state user-read-playback-state"
+
+
+'''
 sp = spotipy.Spotify(
     auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scopes)
 )
-
-banned_tracks = []
-queue = []
-session_data = []
+'''
 
 app = Flask(__name__)
 CORS(app, origins='*')
+app.secret_key = "your_secret_key"  # Set a secret key for session management
+banned_tracks = []
+queue = []
+session_data = []
+sp_oauth = SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scopes)
 
 
 #begins session useing spi
 @app.route("/")
 def start():
-    return "session begun"
+
+    '''
+    global sp
+    sp = spotipy.Spotify(
+    auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scopes)
+    )
+    return "connected"
+    '''
+    if "spotify_token" in session:
+        return "You are already authenticated."
+    else:
+        # Redirect to Spotify authorization page
+        auth_url = sp_oauth.get_authorize_url()
+        return redirect(auth_url)
 
 @app.route("/callback")
 def callback():
-    return session
+    code = request.args.get("code")
+    if code:
+        # Exchange code for access token
+        token_info = sp_oauth.get_access_token(code)
+        session["spotify_token"] = token_info["access_token"]
+        return "Authentication successful! You can now use the application."
+    else:
+        return "Error: Failed to authenticate with Spotify."
+    
+@app.route("/logout")
+def logout():
+    # Clear user session
+    session.clear()
+    return "Logged out successfully."
+
+    #return session
 
 #pauses a song
 @app.route("/pause")
@@ -84,13 +118,15 @@ def next_song():
 
 @app.route("/song_info")
 def song_info():
+
+  # Refresh token logic
     current = sp.current_playback()
     track_progress_sec = current["item"]["duration_ms"]*.001 - current["progress_ms"]*.001 
     track_progress_secs = int(round(track_progress_sec % 60, 0))
     track_progress_secs = str(track_progress_secs).zfill(2)
     track_progress_min = int(track_progress_sec // 60)
     returned_time = f"{track_progress_min}:{track_progress_secs}"
-    if  track_progress_sec < 5 and track_progress_min == 0 and len(queue) > 0:
+    if  (track_progress_sec < 5 and track_progress_min == 0) and len(queue) > 0:
         sp.add_to_queue(queue[0])
         session_data.append(queue[0])
         print(len(queue))
@@ -117,7 +153,6 @@ def queue_info():
     track_ids = []
     for uri in queue:
     # Split the URI by ':' and get the third element (track ID)
-        print(uri)
         track_id = uri.split(':')[2]
         track_ids.append(track_id)
 
@@ -133,6 +168,9 @@ def queue_info():
                   }
         count +=1
         queue_adjusted.append(current)
+    if len(queue) == 0: 
+        return "queue Empty"
+
     return queue_adjusted
 
 @app.route("/closing_time")
