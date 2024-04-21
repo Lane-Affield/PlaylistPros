@@ -16,9 +16,9 @@ function App() {
               <Route path="/" element={<LogInPage />}></Route>
               <Route path="/home/:user"element={<HomePage />}></Route>
               <Route path="/session/:user" element ={<SessionPage />}></Route>
-              <Route path="/current_session/:sessionname" element={<CurrentSessionPage />}></Route>
+              <Route path="/current_session/:user/:sessionname" element={<CurrentSessionPage />}></Route>
               <Route path="/idk"></Route>
-              <Route path= "/about/" element={<AboutPage />}></Route>
+              <Route path= "/about" element={<AboutPage />}></Route>
               <Route path= "/analytics" ></Route>
             </Routes>
             </div>

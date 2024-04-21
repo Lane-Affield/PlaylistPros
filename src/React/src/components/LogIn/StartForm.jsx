@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { redirect, useNavigate } from "react-router-dom";
 import "../../Styling/textinput.css";
 
 function StartForm() {
@@ -25,7 +25,7 @@ function StartForm() {
     const enteredUsername = username; // Access username from state
 
     localStorage.setItem("username", enteredUsername); // Store username in storage
-    fetch("http://127.0.0.1:5000/")
+    const data = fetch("http://127.0.0.1:5000/login/" + username)
     navigate(`/home/${enteredUsername}`);
   };
 

@@ -3,8 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "electron-main.js",
   "scripts": {
+    "electron": "electron .",
     "dev": "vite",
+    "start": "vite",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
@@ -13,9 +16,10 @@
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "concurrently": "^8.2.2",
+    "cors": "^2.8.5",
     "cross-env": "^7.0.3",
-    "electron": "^30.0.0",
     "electron-builder": "^24.13.3",
+    "express": "^4.19.2",
     "passport-spotify": "^2.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
