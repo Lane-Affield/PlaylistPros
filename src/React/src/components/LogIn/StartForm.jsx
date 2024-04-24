@@ -1,15 +1,33 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "../../Styling/textinput.css"
+import React, { useState, useEffect, useRef } from "react";
+import { redirect, useNavigate } from "react-router-dom";
+import "../../Styling/textinput.css";
+
 function StartForm() {
-    let navigate = useNavigate();
-    const routeChange = () => {
-        let path = "/home"
-        fetch("http://127.0.0.1:5000/")
-        navigate(path)
+  const navigate = useNavigate();
+  const [username, setUsername] = useState(""); // State to store username
+  const formRef = useRef(null); // Reference to the form element
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername); // Pre-populate username from storage
+    }
+  }, []); // Empty dependency array to run only once on component mount
+
+  const handleFormSubmit = (event) => {
+    event.preventDefault();
+
+    if (!formRef.current) {
+      console.error("Form reference not available yet!");
+      return;
     }
 
-  const [formType, setFormType] = useState("login");
+    const enteredUsername = username; // Access username from state
+
+    localStorage.setItem("username", enteredUsername); // Store username in storage
+    const data = fetch("http://127.0.0.1:5000/login/" + username)
+    navigate(`/home/${enteredUsername}`);
+  };
 
   const swapLogInForm = () => {
     setFormType("login");
@@ -19,53 +37,63 @@ function StartForm() {
     setFormType("signup");
   };
 
-
+  const [formType, setFormType] = useState("login"); // State for form type (login/signup)
 
   return (
     <div>
       <div>
         <h1>PLAYLIST PROS</h1>
         {formType === "login" ? (
-          <form onSubmit={routeChange}>
+          <form onSubmit={handleFormSubmit} ref={formRef}>
             <div className="container text-center">
               <div className="row">
                 <label className="labels">Username</label>
-                <input type="text" className="input_text" required />
+                <input
+                  type="text"
+                  className="input_text"
+                  required
+                  onChange={(e) => setUsername(e.target.value)} // Update username state on change
+                />
               </div>
               <div className="row">
                 <label className="labels">Password</label>
-                <input type="password" className="input_text"required /></div>
+                <input type="password" className="input_text" required />
               </div>
               <div className="row">
                 <div className="col">
-                  <button onClick={swapSignUpForm}>Sign Up</button>
+                  <button onClick={swapSignUpForm} className="glass-button">Sign Up</button>
                 </div>
                 <div className="col">
-                  <button type="submit">Continue</button>
+                  <button type="submit" className="glass-button" >Continue</button>
                 </div>
               </div>
+            </div>
           </form>
         ) : (
-          <form onSubmit={routeChange}>
+          <form onSubmit={handleFormSubmit} ref={formRef}>
             <div className="container text-center">
               <div className="row">
                 <label>Username</label>
-                <input type="text" placeholder="Username" required />
+                <input type="text" placeholder="Username" className="input_text" required onChange={(e) => setUsername(e.target.value)} />
               </div>
               <div className="row">
                 <label>Password</label>
-                <input type="password" placeholder="Password" required />
+                <input type="password" placeholder="Password" className="input_text"required />
               </div>
               <div className="row">
                 <label>Confirm Password</label>
-                <input type="password" placeholder="Confirm Password" required />
+                <input type="password" placeholder="Confirm Password" className="input_text" required />
               </div>
               <div className="row">
                 <div className="col">
-                  <button type="button" onClick={swapLogInForm}>Log In</button>
+                  <button type="button" className="glass-button" onClick={swapLogInForm}>
+                    Log In
+                  </button>
                 </div>
                 <div className="col">
-                  <button type="submit" className="glass-button">Continue</button>
+                  <button type="submit" className="glass-button">
+                    Continue
+                  </button>
                 </div>
               </div>
             </div>

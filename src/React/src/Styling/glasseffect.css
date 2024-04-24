@@ -19,3 +19,10 @@
 .glass * {
     margin: 10px; /* Example using margin */
   }
+.scroll {
+  color: white;
+  overflow-y: scroll;
+  max-height: 100px; 
+
+
+}
