@@ -27,6 +27,7 @@ from dotenv import load_dotenv
 from flask import Flask, redirect, request, session, render_template, jsonify
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, current_user, login_required
+from DB_Queries import PlaylistProsCrud
 
 ''''''
 load_dotenv()
@@ -122,6 +123,9 @@ def login(username):
 #initiates and sets up a new session for the user
 @app.route("/session_setup/<name>/<start_song>/<banned_songs>")
 def session_setup(name, start_song, banned_songs):
+    global session_name
+    session_name = name
+
     banned_tracks = []
     queue = []
     banned = banned_songs.split(',')
@@ -186,6 +190,12 @@ def song_info():
 @app.route("/closing_time")
 def closing_time():
     sp.start_playback(uris=['spotify:track:1A5V1sxyCLpKJezp75tUXn'])
+
+    # establish database connection
+    instance = PlaylistProsCrud()
+    # upload the session songs to the database under user, sesison_name
+    instance.addSessionSongs(current_user.username, session_name, session_data)
+
     return "GET OUT"
 
 
