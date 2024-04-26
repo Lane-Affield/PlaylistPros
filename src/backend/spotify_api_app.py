@@ -3,13 +3,13 @@ AUTHORS: Lane Affield ,
 DATE CREATED: 3/27/24
 LAST EDIT: 4/26/24
 LAST EDIT BY: Riley Rongere
-EDIT NOTES : Began connecting the dynamo db to the flask app
+EDIT NOTES : New User is created. New session is not working yet
 
 DESCTIPTION:
     This file is for interacting with the spotify api. 
     
 
-    NOTE: playing a previous playing a previous song will require more than just a call 
+    NOTE: playing a previous song will require more than just a call 
           - need to keep track of ID of next song and queue it next, then add it back to the api
 
  closing time uri (important) spotify:artist:1TqQi97nqeiuOJrIFv5Sw0
@@ -41,26 +41,39 @@ app = Flask(__name__)
 CORS(app, origins='*')
 sp = None
 
-
-class User(UserMixin):
-    def __init__(self, id, username):
-        self.id = id
-        self.username = username
+# TODO: Ask Lane if there is another use for this outside of the 'load_user function'
+# class User(UserMixin):
+#     def __init__(self, id, username):
+#         self.id = id
+#         self.username = username
 
 
 # Login manager configuration
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-
+#TODO: does this even get used? Is this needed or can I just retrieve the user directly in the 'login' function
+# retrieve a user from the db using the username (must match exactly)
 @login_manager.user_loader
-def load_user(user_id):
-    # Replace this with your logic to retrieve user by ID (e.g., database query)
-    users = {  # Replace with database lookup
-        1: User(1, "user1"),
-        2: User(2, "user2"),
-    }
-    return users.get(int(user_id))
+def load_user(username):
+    # establish db connection
+    instance = PlaylistProsCrud()
+
+    # note: if the user is in the table, you will get a dict, otherwise you will get the string "User not in table."
+    retrieved_user = instance.getUser(username)
+
+    return retrieved_user
+
+
+# TODO: double check with Lane to check the purpose/ use of this function. I don't see it being used anywhere.
+# @login_manager.user_loader
+# def load_user(user_id):
+#     # Replace this with your logic to retrieve user by ID (e.g., database query)
+#     users = {  # Replace with database lookup
+#         1: User(1, "user1"),
+#         2: User(2, "user2"),
+#     }
+#     return users.get(int(user_id))
 
 def create_spotify_object():
     global sp
@@ -116,9 +129,8 @@ def login(username):
     # connect to db and create a user with username 'user'
     instance = PlaylistProsCrud()
 
-    # if user does not exist, create a new user
-    if type(instance.getUser(user)) == str: # will return "User not in table." if user does not exist
-        instance.createUser(user)
+    # attempt to creat a user with username, WILL NOT create a new user with repeated username/ recreate user
+    instance.createUser(user, "temp_passcode")
 
     sp = get_or_create_spotify_object()  # Get or create authenticated Spotify object
     auth_url = sp.auth_manager.get_authorize_url()  # Use auth_manager for authorization URL
