@@ -1,9 +1,9 @@
 """
 AUTHORS: Lane Affield , 
 DATE CREATED: 3/27/24
-LAST EDIT:
-LAST EDIT BY:
-EDIT NOTES :
+LAST EDIT: 4/26/24
+LAST EDIT BY: Riley Rongere
+EDIT NOTES : Began connecting the dynamo db to the flask app
 
 DESCTIPTION:
     This file is for interacting with the spotify api. 
@@ -112,6 +112,14 @@ def profile():
 def login(username):
     global user 
     user = username
+
+    # connect to db and create a user with username 'user'
+    instance = PlaylistProsCrud()
+
+    # if user does not exist, create a new user
+    if type(instance.getUser(user)) == str: # will return "User not in table." if user does not exist
+        instance.createUser(user)
+
     sp = get_or_create_spotify_object()  # Get or create authenticated Spotify object
     auth_url = sp.auth_manager.get_authorize_url()  # Use auth_manager for authorization URL
     return redirect(auth_url)
@@ -121,10 +129,15 @@ def login(username):
 
 #PLAYER COMPONENTS
 #initiates and sets up a new session for the user
+#additionally, creates a new session within the db for the given user <name>
 @app.route("/session_setup/<name>/<start_song>/<banned_songs>")
 def session_setup(name, start_song, banned_songs):
     global session_name
     session_name = name
+
+    # connect to db and create a session for 'user' named 'session_name'
+    instance = PlaylistProsCrud()
+    instance.createSession(user, session_name)
 
     banned_tracks = []
     queue = []
@@ -187,14 +200,15 @@ def song_info():
                     }
     return jsonify(song_data)
 #plays closing time so people know to leave
+#additionally uploads the songs from the current sesison to the database
 @app.route("/closing_time")
 def closing_time():
-    sp.start_playback(uris=['spotify:track:1A5V1sxyCLpKJezp75tUXn'])
-
     # establish database connection
     instance = PlaylistProsCrud()
     # upload the session songs to the database under user, sesison_name
-    instance.addSessionSongs(current_user.username, session_name, session_data)
+    instance.addSessionSongs(user, session_name, session_data)
+
+    sp.start_playback(uris=['spotify:track:1A5V1sxyCLpKJezp75tUXn'])
 
     return "GET OUT"
 
