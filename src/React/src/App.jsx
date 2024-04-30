@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage.jsx';
 import SessionPage from './pages/SessionPage.jsx';
 import CurrentSessionPage from './pages/CurrentSessionPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
+import AnalyticsPage from './pages/AnalyticsPage.jsx';
 
 
 
@@ -19,7 +20,7 @@ function App() {
               <Route path="/current_session/:user/:sessionname" element={<CurrentSessionPage />}></Route>
               <Route path="/idk"></Route>
               <Route path= "/about" element={<AboutPage />}></Route>
-              <Route path= "/analytics" ></Route>
+              <Route path= "/analytics" element={<AnalyticsPage />}></Route>
             </Routes>
             </div>
           </div>
