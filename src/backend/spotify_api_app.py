@@ -38,6 +38,7 @@ scopes = "playlist-read-private playlist-read-collaborative playlist-modify-publ
 ''''''
 #sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scopes))
 app = Flask(__name__)
+app.config["SECRET_KEY"] = "cache_key"
 CORS(app, origins='*')
 sp = None
 
@@ -121,16 +122,18 @@ def profile():
     else:
         return "You are not logged in."
 
+
 @app.route("/login/<username>")
-def login(username):
-    global user 
+def login(username): 
+    global user # this is used for the redirect
     user = username
+    session["username"] = username # client side caches the username for the session creation.
 
     # connect to db and create a user with username 'user'
     instance = PlaylistProsCrud()
 
-    # attempt to creat a user with username, WILL NOT create a new user with repeated username/ recreate user
-    instance.createUser(user, "temp_passcode")
+    # attempt to creat a user with username, WILL NOT create a new user with repeated username/ recreate user (this is intended to avoid overiding users)
+    instance.createUser(username, "temp_passcode")
 
     sp = get_or_create_spotify_object()  # Get or create authenticated Spotify object
     auth_url = sp.auth_manager.get_authorize_url()  # Use auth_manager for authorization URL
@@ -146,10 +149,11 @@ def login(username):
 def session_setup(name, start_song, banned_songs):
     global session_name
     session_name = name
+    session["session_name"] = session_name
 
     # connect to db and create a session for 'user' named 'session_name'
     instance = PlaylistProsCrud()
-    instance.createSession(user, session_name)
+    instance.createSession(session["username"], session_name)# TODO: 'user is not saved/updated when login/... is run so I need another way to save the username
 
     banned_tracks = []
     queue = []
@@ -159,6 +163,7 @@ def session_setup(name, start_song, banned_songs):
         banned_tracks.append(ban)
     sp.start_playback(uris=[start_song])
     return "session Begun"
+
 
 #pauses and playes songs
 @app.route("/pause")
@@ -172,11 +177,15 @@ def pause_music():
             return "played"
         except:
             return "error"
+        
+
 #play previous Track
 @app.route("/previous")
 def previous_song():
     sp.previous_track()
     return "played previous track"
+
+
 #plays next track in queue
 @app.route("/next")
 def next_song():
@@ -186,6 +195,7 @@ def next_song():
         queue.pop(0)
     sp.next_track()
     return "next song played"
+
 
 #get current song info, returns the album image, artist name, track name as well as the current time location in the song
 @app.route("/song_info")
@@ -211,6 +221,8 @@ def song_info():
                 "album_img" : current["item"]["album"]["images"][0]["url"]
                     }
     return jsonify(song_data)
+
+
 #plays closing time so people know to leave
 #additionally uploads the songs from the current sesison to the database
 @app.route("/closing_time")
@@ -218,7 +230,8 @@ def closing_time():
     # establish database connection
     instance = PlaylistProsCrud()
     # upload the session songs to the database under user, sesison_name
-    instance.addSessionSongs(user, session_name, session_data)
+    print("session",session)
+    instance.addSessionSongs(session["username"], session["session_name"], session_data)
 
     sp.start_playback(uris=['spotify:track:1A5V1sxyCLpKJezp75tUXn'])
 
@@ -268,11 +281,13 @@ def queue_info():
         queue_adjusted.append(current)
     return queue_adjusted
 
+
 #adds a song to the queue
 @app.route("/addqueue/<id>")
 def add_to_queue(id):
     queue.append(id)
     return "added to queue"
+
 
 #bans a song from the session by appending to the banned list
 @app.route("/session/ban/<uri>")
@@ -297,6 +312,7 @@ def search_song(search):
         }
         search_results.append(track_info)
     return search_results
+
 
 @app.route("/session/queue/<uri>/")
 def session_queue(uri):
