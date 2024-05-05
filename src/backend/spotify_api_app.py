@@ -21,6 +21,7 @@ DESCTIPTION:
 
 
 import datetime
+import pandas as pd
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import os 
@@ -53,7 +54,6 @@ class User(UserMixin):
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-
 @login_manager.user_loader
 def load_user(user_id):
     # Replace this with your logic to retrieve user by ID (e.g., database query)
@@ -80,7 +80,7 @@ session_data = []
 @app.route("/")
 def start():
     sp = create_spotify_object()
-    start_time = datetime.datetime.now()
+    session['start_time'] = datetime.datetime.now()
     return "connected"
 def get_or_create_spotify_object():
     global sp
@@ -210,17 +210,27 @@ def remove_queue(uri):
 @app.route("/session_info")
 def session_info():
     global start_time
-    # results = sp.current_user_recently_played(after=start_time)
+    results = sp.current_user_recently_played(after=start_time)
     
-    # session_data = []
-    # for item in results["items"]:
-    #     data = {
-    #         "track_name": item["track"]["name"],
-    #         "artist_name": item["track"]["artists"][0]["name"]
-    #     }
-    #     session_data.append(data)
+    session_data = []
+    for item in results["items"]:
+        data = {
+            "track_name": item["track"]["name"],
+            "artist_name": item["track"]["artists"][0]["name"],
+            "duration_ms": item["track"]["duration_ms"]
+        }
+        session_data.append(data)
 
-    return sp.current_user_recently_played()
+    df = pd.DataFrame(session_data)
+    data_results = {
+    "most_listened_to_artist": df['artist_name'].mode()[0],
+    "most_listened_to_track": df['track_name'].mode()[0],
+    "avg_time_listened": df["duration_ms"].mean(),
+    "# of songs listened to": df.shape[0]
+    }
+
+    return data_results
+
 
 #get info on the queue 
 @app.route("/session/queue_info")
