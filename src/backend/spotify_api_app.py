@@ -20,6 +20,7 @@ DESCTIPTION:
 
 
 
+import datetime
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import os 
@@ -27,6 +28,7 @@ from dotenv import load_dotenv
 from flask import Flask, redirect, request, session, render_template, jsonify
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, current_user, login_required
+from DB_Queries import PlaylistProsCrud
 
 ''''''
 load_dotenv()
@@ -78,6 +80,7 @@ session_data = []
 @app.route("/")
 def start():
     sp = create_spotify_object()
+    start_time = datetime.datetime.now()
     return "connected"
 def get_or_create_spotify_object():
     global sp
@@ -204,10 +207,21 @@ def remove_queue(uri):
     queue.remove(uri)
     return f"removed: {uri}"
 
+@app.route("/session_info")
+def session_info():
+    global start_time
+    # results = sp.current_user_recently_played(after=start_time)
+    
+    # session_data = []
+    # for item in results["items"]:
+    #     data = {
+    #         "track_name": item["track"]["name"],
+    #         "artist_name": item["track"]["artists"][0]["name"]
+    #     }
+    #     session_data.append(data)
 
-@app.route("/session_info/<ids>")
-def session_info(ids):
-    sp.audio_features(tracks = ids)
+    return sp.current_user_recently_played()
+
 #get info on the queue 
 @app.route("/session/queue_info")
 def queue_info():
