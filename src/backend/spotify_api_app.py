@@ -20,7 +20,7 @@ DESCTIPTION:
 
 
 
-import datetime
+import time
 import pandas as pd
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
@@ -36,7 +36,7 @@ load_dotenv()
 client_id = os.getenv("CLIENT_ID")  # client_ID in the .env file, can be found in you rspotify Project Info
 client_secret = os.getenv("CLIENT_SECRET")  # same as client_id
 redirect_uri = "http://127.0.0.1:5000/callback"  # this is the redirect uri after login
-scopes = "playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify user-top-read user-follow-read streaming user-modify-playback-state user-read-playback-state"
+scopes = "playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify user-top-read user-follow-read streaming user-modify-playback-state user-read-playback-state user-read-recently-played"
 ''''''
 #sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scopes))
 app = Flask(__name__)
@@ -81,7 +81,7 @@ session_data = []
 def start():
     sp = create_spotify_object()
     global start_time 
-    start_time = datetime.datetime.now()
+    start_time = int(time.time())
     return "connected"
 def get_or_create_spotify_object():
     global sp
@@ -222,15 +222,15 @@ def session_info():
         }
         session_info.append(data)
 
-    df = pd.DataFrame(session_info)
-    data_results = {
-    "most_listened_to_artist": df['artist_name'].mode()[0],
-    "most_listened_to_track": df['track_name'].mode()[0],
-    "avg_song_length": df["duration_ms"].mean(),
-    "num_songs": df.shape[0]
-    }
+    # df = pd.DataFrame(session_info)
+    # data_results = {
+    # "most_listened_to_artist": df['artist_name'].mode()[0],
+    # "most_listened_to_track": df['track_name'].mode()[0],
+    # "avg_song_length": df["duration_ms"].mean(),
+    # "num_songs": df.shape[0]
+    # }
 
-    return jsonify(data_results)
+    # return jsonify(data_results)
 
 #get info on the queue 
 @app.route("/session/queue_info")
