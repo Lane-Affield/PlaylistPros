@@ -80,7 +80,8 @@ session_data = []
 @app.route("/")
 def start():
     sp = create_spotify_object()
-    session['start_time'] = datetime.datetime.now()
+    global start_time 
+    start_time = datetime.datetime.now()
     return "connected"
 def get_or_create_spotify_object():
     global sp
@@ -212,25 +213,24 @@ def session_info():
     global start_time
     results = sp.current_user_recently_played(after=start_time)
     
-    session_data = []
+    session_info = []
     for item in results["items"]:
         data = {
             "track_name": item["track"]["name"],
             "artist_name": item["track"]["artists"][0]["name"],
             "duration_ms": item["track"]["duration_ms"]
         }
-        session_data.append(data)
+        session_info.append(data)
 
-    df = pd.DataFrame(session_data)
+    df = pd.DataFrame(session_info)
     data_results = {
     "most_listened_to_artist": df['artist_name'].mode()[0],
     "most_listened_to_track": df['track_name'].mode()[0],
-    "avg_time_listened": df["duration_ms"].mean(),
-    "# of songs listened to": df.shape[0]
+    "avg_song_length": df["duration_ms"].mean(),
+    "num_songs": df.shape[0]
     }
 
-    return data_results
-
+    return jsonify(data_results)
 
 #get info on the queue 
 @app.route("/session/queue_info")
