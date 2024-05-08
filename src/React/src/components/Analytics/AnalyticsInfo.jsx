@@ -1,17 +1,24 @@
-import { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 function AnalyticsInfo() {
     const [analyticsInfo, setAnalyticsInfo] = useState("");
-    const InfoPull = async () => {
-        try {
-          const response = await axios.get("http://127.0.0.1:5000/session_info");
-          console.log(response.data)
-          setAnalyticsInfo(response.data);
-        } catch (error) {
-          console.error("Error fetching session data:", error);
-          // Handle errors appropriately, like displaying an error message
-        }
-      };
+
+    useEffect(() => {
+        const InfoPull = async () => {
+            try {
+                const response = await axios.get("http://127.0.0.1:5000/session_info");
+                console.log(response.data)
+                setAnalyticsInfo(response.data);
+            } catch (error) {
+                console.error("Error fetching session data:", error);
+                // Handle errors appropriately, like displaying an error message
+            }
+        };
+
+        InfoPull(); // Call InfoPull function when the component mounts
+
+    }, []); // Empty dependency array ensures that InfoPull is called only once when the component mounts
 
     return (
         <div className="container text-center">
@@ -36,7 +43,7 @@ function AnalyticsInfo() {
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
-export default AnalyticsInfo
+export default AnalyticsInfo;

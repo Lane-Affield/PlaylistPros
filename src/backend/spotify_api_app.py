@@ -222,15 +222,15 @@ def session_info():
         }
         session_info.append(data)
 
-    # df = pd.DataFrame(session_info)
-    # data_results = {
-    # "most_listened_to_artist": df['artist_name'].mode()[0],
-    # "most_listened_to_track": df['track_name'].mode()[0],
-    # "avg_song_length": df["duration_ms"].mean(),
-    # "num_songs": df.shape[0]
-    # }
+    df = pd.DataFrame(session_info)
+    data_results = {
+    "most_listened_to_artist": df['artist_name'].mode()[0],
+    "most_listened_to_track": df['track_name'].mode()[0],
+    "avg_song_length": df["duration_ms"].mean(),
+    "num_songs": df.shape[0]
+    }
 
-    # return jsonify(data_results)
+    return jsonify(data_results)
 
 #get info on the queue 
 @app.route("/session/queue_info")
