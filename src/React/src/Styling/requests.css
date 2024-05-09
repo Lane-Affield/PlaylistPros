@@ -1,0 +1,9 @@
+.req-col {
+    margin: 0 auto;
+  }
+  
+  .req-scroll {
+    color: white;
+    overflow-y: scroll;
+    max-height: 75vh;
+  }

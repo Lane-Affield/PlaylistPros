@@ -8,7 +8,7 @@ function SessionSelection() {
   const [searchResults, setSearchResults] = useState([]);
   const [startSong, setStartSong] = useState(""); // State to store the start song
   const [bannedTracks, setBannedTracks] = useState([]);
-  const [sessionName, setSessionName] = useState("");
+  const [randomNum, setRandomNum] = useState(Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000);
 
   const handleSearch = async (event) => {
     event.preventDefault();
@@ -34,12 +34,12 @@ function SessionSelection() {
     const storedUsername = localStorage.getItem("username");
     const bannedSongURIs = bannedTracks.map((track) => track.song_uri).join(","); // Convert song URIs to comma-separated string
     console.log("Banned Song URIs:", bannedSongURIs)
-    let path = "/current_session/" + storedUsername + "/" + sessionName;
+    let path = "/current_session/" + storedUsername + "/" + randomNum;
     fetch("http://127.0.0.1:5000/session_setup/" + randomNum + "/" +  startSong.song_uri + "/" + bannedSongURIs)
     navigate(path);
   };
 
-  const randomNum = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+  // const randomNum = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
   
 
   let navigate = useNavigate();
@@ -77,15 +77,6 @@ function SessionSelection() {
             </div>
           )}
           <form onSubmit={handleSessionCreation}>
-            <div>
-              <label>Session Name</label>
-              <input
-                type="text"
-                value={sessionName}
-                onChange={(e) => setSessionName(e.target.value)}
-                className="input_text"
-              />
-            </div>
             <h4>{randomNum}</h4>
             <button type="submit" className="glass-button">Create</button>
           </form>

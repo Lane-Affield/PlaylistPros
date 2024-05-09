@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage.jsx';
 import SessionPage from './pages/SessionPage.jsx';
 import CurrentSessionPage from './pages/CurrentSessionPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
+import RequestPage from './pages/RequestPage.jsx';
 
 
 
@@ -16,8 +17,8 @@ function App() {
               <Route path="/" element={<LogInPage />}></Route>
               <Route path="/home/:user"element={<HomePage />}></Route>
               <Route path="/session/:user" element ={<SessionPage />}></Route>
-              <Route path="/current_session/:user/:sessionname" element={<CurrentSessionPage />}></Route>
-              <Route path="/idk"></Route>
+              <Route path="/current_session/:user/:sessioncode" element={<CurrentSessionPage />}></Route>
+              <Route path="/request/:user/:sessioncode" element={<RequestPage />}></Route>
               <Route path= "/about" element={<AboutPage />}></Route>
               <Route path= "/analytics" ></Route>
             </Routes>
