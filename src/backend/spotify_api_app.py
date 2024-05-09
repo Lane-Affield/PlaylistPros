@@ -126,6 +126,8 @@ def profile():
 @app.route("/login/<username>")
 def login(username): 
     global user # this is used for the redirect
+def login(username): 
+    global user # this is used for the redirect
     user = username
 
     # connect to db and create a user with username 'user'
@@ -231,6 +233,7 @@ def closing_time(username, session_code):
 
     sp.start_playback(uris=['spotify:track:1A5V1sxyCLpKJezp75tUXn'])
 
+
     return "GET OUT"
 
 
@@ -276,6 +279,7 @@ def queue_info():
         count +=1
         queue_adjusted.append(current)
     return queue_adjusted
+
 
 
 #adds a song to the queue
