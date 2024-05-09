@@ -4,8 +4,10 @@ import SearchResults from "./SearchResults";
 import "../../Styling/glasseffect.css"
 import "../../Styling/textinput.css"
 function SongController(){
+    const storedUsername = localStorage.getItem("username");
+    const storedSessionCode = localStorage.getItem("sessionCode");
     const closingTime=  () => {
-        fetch("http://127.0.0.1:5000/closing_time")
+        fetch("http://127.0.0.1:5000/" + storedUsername + "/" + storedSessionCode + "/" + "closing_time")
     }
     const [searchTerm, setSearchTerm] = useState("");
     const [searchResults, setSearchResults] = useState([]); // State to store search results

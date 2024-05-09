@@ -1,15 +1,15 @@
 """
 AUTHORS: Lane Affield , 
 DATE CREATED: 3/27/24
-LAST EDIT:
-LAST EDIT BY:
-EDIT NOTES :
+LAST EDIT: 5/8/24
+LAST EDIT BY: Riley Rongere
+EDIT NOTES : Session Creation for db working
 
 DESCTIPTION:
     This file is for interacting with the spotify api. 
     
 
-    NOTE: playing a previous playing a previous song will require more than just a call 
+    NOTE: playing a previous song will require more than just a call 
           - need to keep track of ID of next song and queue it next, then add it back to the api
 
  closing time uri (important) spotify:artist:1TqQi97nqeiuOJrIFv5Sw0
@@ -27,6 +27,7 @@ from dotenv import load_dotenv
 from flask import Flask, redirect, request, session, render_template, jsonify
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, current_user, login_required
+from DB_Queries import PlaylistProsCrud
 
 ''''''
 load_dotenv()
@@ -37,29 +38,43 @@ scopes = "playlist-read-private playlist-read-collaborative playlist-modify-publ
 ''''''
 #sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scopes))
 app = Flask(__name__)
+app.config["SECRET_KEY"] = "cache_key"
 CORS(app, origins='*')
 sp = None
 
-
-class User(UserMixin):
-    def __init__(self, id, username):
-        self.id = id
-        self.username = username
+# TODO: Ask Lane if there is another use for this outside of the 'load_user function'
+# class User(UserMixin):
+#     def __init__(self, id, username):
+#         self.id = id
+#         self.username = username
 
 
 # Login manager configuration
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-
+#TODO: does this even get used? Is this needed or can I just retrieve the user directly in the 'login' function
+# retrieve a user from the db using the username (must match exactly)
 @login_manager.user_loader
-def load_user(user_id):
-    # Replace this with your logic to retrieve user by ID (e.g., database query)
-    users = {  # Replace with database lookup
-        1: User(1, "user1"),
-        2: User(2, "user2"),
-    }
-    return users.get(int(user_id))
+def load_user(username):
+    # establish db connection
+    instance = PlaylistProsCrud()
+
+    # note: if the user is in the table, you will get a dict, otherwise you will get the string "User not in table."
+    retrieved_user = instance.getUser(username)
+
+    return retrieved_user
+
+
+# TODO: double check with Lane to check the purpose/ use of this function. I don't see it being used anywhere.
+# @login_manager.user_loader
+# def load_user(user_id):
+#     # Replace this with your logic to retrieve user by ID (e.g., database query)
+#     users = {  # Replace with database lookup
+#         1: User(1, "user1"),
+#         2: User(2, "user2"),
+#     }
+#     return users.get(int(user_id))
 
 def create_spotify_object():
     global sp
@@ -95,7 +110,7 @@ def callback():
     # Store access token in session or database (not shown here)
     return redirect("http://127.0.0.1:8080/home/"+ user)
 
-    #return session
+
 
 @app.route("/profile")
 @login_required  # Restricts access to logged-in users
@@ -107,10 +122,20 @@ def profile():
     else:
         return "You are not logged in."
 
+
 @app.route("/login/<username>")
-def login(username):
-    global user 
+def login(username): 
+    global user # this is used for the redirect
+def login(username): 
+    global user # this is used for the redirect
     user = username
+
+    # connect to db and create a user with username 'user'
+    instance = PlaylistProsCrud()
+
+    # attempt to creat a user with username, WILL NOT create a new user with repeated username/ recreate user (this is intended to avoid overiding users)
+    instance.createUser(username, "temp_passcode")
+
     sp = get_or_create_spotify_object()  # Get or create authenticated Spotify object
     auth_url = sp.auth_manager.get_authorize_url()  # Use auth_manager for authorization URL
     return redirect(auth_url)
@@ -119,9 +144,15 @@ def login(username):
 
 
 #PLAYER COMPONENTS
-#initiates and sets up a new session for the user
-@app.route("/session_setup/<name>/<start_song>/<banned_songs>")
-def session_setup(name, start_song, banned_songs):
+#initiates and sets up a new session for the username
+#additionally, creates a new session within the db for the given user <username> with sessionname session_code
+@app.route("/session_setup/<username>/<session_code>/<start_song>/<banned_songs>")
+def session_setup(username, session_code, start_song, banned_songs):
+
+    # connect to db and create a session for 'user' named 'session_name'
+    instance = PlaylistProsCrud()
+    instance.createSession(username, session_code)
+
     banned_tracks = []
     queue = []
     banned = banned_songs.split(',')
@@ -130,6 +161,7 @@ def session_setup(name, start_song, banned_songs):
         banned_tracks.append(ban)
     sp.start_playback(uris=[start_song])
     return "session Begun"
+
 
 #pauses and playes songs
 @app.route("/pause")
@@ -143,11 +175,15 @@ def pause_music():
             return "played"
         except:
             return "error"
+        
+
 #play previous Track
 @app.route("/previous")
 def previous_song():
     sp.previous_track()
     return "played previous track"
+
+
 #plays next track in queue
 @app.route("/next")
 def next_song():
@@ -157,6 +193,7 @@ def next_song():
         queue.pop(0)
     sp.next_track()
     return "next song played"
+
 
 #get current song info, returns the album image, artist name, track name as well as the current time location in the song
 @app.route("/song_info")
@@ -170,6 +207,7 @@ def song_info():
     if  track_progress_sec < 2 and track_progress_min == 0 and len(queue) > 0:
         sp.add_to_queue(queue[0])
         session_data.append(queue[0])
+        
         print(len(queue))
         queue.pop(0)
         print(len(queue))
@@ -182,10 +220,20 @@ def song_info():
                 "album_img" : current["item"]["album"]["images"][0]["url"]
                     }
     return jsonify(song_data)
+
+
 #plays closing time so people know to leave
-@app.route("/closing_time")
-def closing_time():
+#additionally uploads the songs from the current sesison to the database
+@app.route("/<username>/<session_code>/closing_time")
+def closing_time(username, session_code):
+    # establish database connection
+    instance = PlaylistProsCrud()
+    # upload the session songs to the database under user, sesison_name
+    instance.addSessionSongs(username, session_code, session_data)
+
     sp.start_playback(uris=['spotify:track:1A5V1sxyCLpKJezp75tUXn'])
+
+
     return "GET OUT"
 
 
@@ -232,11 +280,14 @@ def queue_info():
         queue_adjusted.append(current)
     return queue_adjusted
 
+
+
 #adds a song to the queue
 @app.route("/addqueue/<id>")
 def add_to_queue(id):
     queue.append(id)
     return "added to queue"
+
 
 #bans a song from the session by appending to the banned list
 @app.route("/session/ban/<uri>")
@@ -261,6 +312,7 @@ def search_song(search):
         }
         search_results.append(track_info)
     return search_results
+
 
 @app.route("/session/queue/<uri>/")
 def session_queue(uri):
