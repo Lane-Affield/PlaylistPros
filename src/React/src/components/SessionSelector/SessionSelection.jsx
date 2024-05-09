@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate,} from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import "../../Styling/glasseffect.css"
@@ -9,6 +9,7 @@ function SessionSelection() {
   const [startSong, setStartSong] = useState(""); // State to store the start song
   const [bannedTracks, setBannedTracks] = useState([]);
   const [randomNum, setRandomNum] = useState(Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000);
+  localStorage.setItem("sessionCode", randomNum);
 
   const handleSearch = async (event) => {
     event.preventDefault();
@@ -32,10 +33,11 @@ function SessionSelection() {
   const handleSessionCreation = (event) => {
     event.preventDefault();
     const storedUsername = localStorage.getItem("username");
+    const storedSessionCode = localStorage.getItem("sessionCode");
     const bannedSongURIs = bannedTracks.map((track) => track.song_uri).join(","); // Convert song URIs to comma-separated string
     console.log("Banned Song URIs:", bannedSongURIs)
     let path = "/current_session/" + storedUsername + "/" + randomNum;
-    fetch("http://127.0.0.1:5000/session_setup/" + randomNum + "/" +  startSong.song_uri + "/" + bannedSongURIs)
+    fetch("http://127.0.0.1:5000/session_setup/" + storedUsername + "/" + storedSessionCode + "/" +  startSong.song_uri + "/" + bannedSongURIs)
     navigate(path);
   };
 

@@ -1,9 +1,9 @@
 """
 AUTHORS: Lane Affield , 
 DATE CREATED: 3/27/24
-LAST EDIT: 4/26/24
+LAST EDIT: 5/8/24
 LAST EDIT BY: Riley Rongere
-EDIT NOTES : New User is created. New session is not working yet
+EDIT NOTES : Session Creation for db working
 
 DESCTIPTION:
     This file is for interacting with the spotify api. 
@@ -110,7 +110,7 @@ def callback():
     # Store access token in session or database (not shown here)
     return redirect("http://127.0.0.1:8080/home/"+ user)
 
-    #return session
+
 
 @app.route("/profile")
 @login_required  # Restricts access to logged-in users
@@ -127,7 +127,6 @@ def profile():
 def login(username): 
     global user # this is used for the redirect
     user = username
-    session["username"] = username # client side caches the username for the session creation.
 
     # connect to db and create a user with username 'user'
     instance = PlaylistProsCrud()
@@ -143,17 +142,14 @@ def login(username):
 
 
 #PLAYER COMPONENTS
-#initiates and sets up a new session for the user
-#additionally, creates a new session within the db for the given user <name>
-@app.route("/session_setup/<name>/<start_song>/<banned_songs>")
-def session_setup(name, start_song, banned_songs):
-    global session_name
-    session_name = name
-    session["session_name"] = session_name
+#initiates and sets up a new session for the username
+#additionally, creates a new session within the db for the given user <username> with sessionname session_code
+@app.route("/session_setup/<username>/<session_code>/<start_song>/<banned_songs>")
+def session_setup(username, session_code, start_song, banned_songs):
 
     # connect to db and create a session for 'user' named 'session_name'
     instance = PlaylistProsCrud()
-    instance.createSession(session["username"], session_name)# TODO: 'user is not saved/updated when login/... is run so I need another way to save the username
+    instance.createSession(username, session_code)
 
     banned_tracks = []
     queue = []
@@ -209,6 +205,7 @@ def song_info():
     if  track_progress_sec < 2 and track_progress_min == 0 and len(queue) > 0:
         sp.add_to_queue(queue[0])
         session_data.append(queue[0])
+        
         print(len(queue))
         queue.pop(0)
         print(len(queue))
@@ -225,13 +222,12 @@ def song_info():
 
 #plays closing time so people know to leave
 #additionally uploads the songs from the current sesison to the database
-@app.route("/closing_time")
-def closing_time():
+@app.route("/<username>/<session_code>/closing_time")
+def closing_time(username, session_code):
     # establish database connection
     instance = PlaylistProsCrud()
     # upload the session songs to the database under user, sesison_name
-    print("session",session)
-    instance.addSessionSongs(session["username"], session["session_name"], session_data)
+    instance.addSessionSongs(username, session_code, session_data)
 
     sp.start_playback(uris=['spotify:track:1A5V1sxyCLpKJezp75tUXn'])
 
