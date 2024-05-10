@@ -127,8 +127,6 @@ def profile():
 @app.route("/login/<username>")
 def login(username): 
     global user # this is used for the redirect
-def login(username): 
-    global user # this is used for the redirect
     user = username
 
     # connect to db and create a user with username 'user'
