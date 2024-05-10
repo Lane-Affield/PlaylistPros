@@ -2,8 +2,8 @@
 AUTHORS: Lane Affield , 
 DATE CREATED: 3/27/24
 LAST EDIT: 5/8/24
-LAST EDIT BY: Riley Rongere
-EDIT NOTES : Session Creation for db working
+LAST EDIT BY: Nick Wharff
+EDIT NOTES : Analytics Page working
 
 DESCTIPTION:
     This file is for interacting with the spotify api. 
@@ -20,6 +20,8 @@ DESCTIPTION:
 
 
 
+import time
+import pandas as pd
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import os 
@@ -34,11 +36,10 @@ load_dotenv()
 client_id = os.getenv("CLIENT_ID")  # client_ID in the .env file, can be found in you rspotify Project Info
 client_secret = os.getenv("CLIENT_SECRET")  # same as client_id
 redirect_uri = "http://127.0.0.1:5000/callback"  # this is the redirect uri after login
-scopes = "playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify user-top-read user-follow-read streaming user-modify-playback-state user-read-playback-state"
+scopes = "playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify user-top-read user-follow-read streaming user-modify-playback-state user-read-playback-state user-read-recently-played"
 ''''''
 #sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id, client_secret, redirect_uri, scope=scopes))
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "cache_key"
 CORS(app, origins='*')
 sp = None
 
@@ -253,9 +254,29 @@ def remove_queue(uri):
     return f"removed: {uri}"
 
 
-@app.route("/session_info/<ids>")
-def session_info(ids):
-    sp.audio_features(tracks = ids)
+@app.route("/session_info")
+def session_info():
+    global start_time
+    results = sp.current_user_recently_played(after=start_time)
+    
+    session_info = []
+    for item in results["items"]:
+        data = {
+            "track_name": item["track"]["name"],
+            "artist_name": item["track"]["artists"][0]["name"],
+            "duration_ms": item["track"]["duration_ms"]
+        }
+        session_info.append(data)
+
+    df = pd.DataFrame(session_info)
+    data_results = {
+    "most_listened_to_artist": df['artist_name'].mode()[0],
+    "most_listened_to_track": df['track_name'].mode()[0],
+    "avg_song_length": df["duration_ms"].mean(),
+    "num_songs": df.shape[0]
+    }
+
+    return jsonify(data_results)
 #get info on the queue 
 @app.route("/session/queue_info")
 def queue_info():

@@ -5,6 +5,7 @@ import SessionPage from './pages/SessionPage.jsx';
 import CurrentSessionPage from './pages/CurrentSessionPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
 import RequestPage from './pages/RequestPage.jsx';
+import AnalyticsPage from './pages/AnalyticsPage.jsx';
 
 
 
@@ -20,7 +21,7 @@ function App() {
               <Route path="/current_session/:user/:sessioncode" element={<CurrentSessionPage />}></Route>
               <Route path="/request/:user/:sessioncode" element={<RequestPage />}></Route>
               <Route path= "/about" element={<AboutPage />}></Route>
-              <Route path= "/analytics" ></Route>
+              <Route path= "/analytics/:user" element={<AnalyticsPage />}></Route>
             </Routes>
             </div>
           </div>
